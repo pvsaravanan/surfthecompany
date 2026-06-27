@@ -88,6 +88,7 @@ export default function CompanyOverviewSection({
       )}
 
       <div className="space-y-6">
+        {/* Funding display temporarily disabled for future use
         {isGenerating && fundingData === null ? (
           <FundingSkeleton />
         ) : fundingData && (
@@ -95,6 +96,7 @@ export default function CompanyOverviewSection({
             <FundingDisplay fundingData={fundingData} />
           </div>
         )}
+        */}
 
         {isGenerating && crunchbaseData === null ? (
           <FundingSkeleton />
