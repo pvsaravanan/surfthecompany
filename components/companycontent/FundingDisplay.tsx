@@ -1,4 +1,4 @@
-import { ArrowUpRight, DollarSign, TrendingUp, ShieldAlert, Award } from 'lucide-react';
+import { ArrowUpRight, DollarSign, TrendingUp, Award, GraduationCap, Briefcase, Lightbulb } from 'lucide-react';
 
 interface FundingDisplayProps {
   fundingData: {
@@ -60,13 +60,19 @@ function parseFunding(summaryText: string) {
 // Function to select an icon based on section title
 const getSectionIcon = (title: string) => {
   const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('scope') || lowerTitle.includes('commitment') || lowerTitle.includes('invest')) {
+  if (lowerTitle.includes('scope') || lowerTitle.includes('backing')) {
+    return <Briefcase className="w-5 h-5 text-brand-default" />;
+  }
+  if (lowerTitle.includes('health') || lowerTitle.includes('growth')) {
     return <TrendingUp className="w-5 h-5 text-emerald-600" />;
   }
-  if (lowerTitle.includes('structure') || lowerTitle.includes('fund')) {
-    return <DollarSign className="w-5 h-5 text-brand-default" />;
+  if (lowerTitle.includes('seeker') || lowerTitle.includes('graduate')) {
+    return <GraduationCap className="w-5 h-5 text-purple-600" />;
   }
-  return <Award className="w-5 h-5 text-amber-600" />;
+  if (lowerTitle.includes('takeaway')) {
+    return <Lightbulb className="w-5 h-5 text-amber-600" />;
+  }
+  return <Award className="w-5 h-5 text-blue-600" />;
 };
 
 export default function FundingDisplay({ fundingData }: FundingDisplayProps) {
