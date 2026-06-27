@@ -99,6 +99,7 @@ export default function SurfTheCompany() {
         />
       </div>
 
+      <div className="h-24" />
       <div className="flex-grow" />
       <footer className="fixed bottom-0 left-0 right-0 w-full py-4 bg-secondary-default border-t opacity-0 animate-fade-up [animation-delay:1200ms]">
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center sm:gap-6 px-4">
