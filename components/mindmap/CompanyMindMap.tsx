@@ -80,38 +80,64 @@ const CompanyMindMap: React.FC<CompanyMindMapProps> = ({ data }) => {
         });
         const baseElements = convertToExcalidrawElements(parsedElements);
         
-        // Update text content and estimate heights
+        // Update text content and estimate dimensions
         const updatedElements = baseElements.map((el: any) => {
           if (el.type === "text" && el.text) {
             const newText = el.text.replace(/\\n|<br\s*\/?>/gi, "\n");
-            const lineCount = newText.split('\n').length;
+            const lines = newText.split('\n');
+            const lineCount = lines.length;
             const estimatedHeight = lineCount * 18; // approx 18px per line
+            
+            const maxLineLength = Math.max(...lines.map((line: string) => line.length));
+            const estimatedWidth = maxLineLength * 9.5; // approx 9.5px per character
+            
             return {
               ...el,
               text: newText,
-              height: estimatedHeight
+              height: estimatedHeight,
+              width: estimatedWidth
             };
           }
           return el;
         });
 
-        // Adjust containers to fit text
+        // Adjust containers to fit text (both height and width)
         const finalElements = updatedElements.map((el: any) => {
           if (el.type === "rectangle") {
             const boundText = updatedElements.find(
               (textEl: any) => textEl.type === "text" && textEl.containerId === el.id
             );
             if (boundText) {
-              const padding = 32; // Top + Bottom padding
-              const neededHeight = boundText.height + padding;
-              if (el.height < neededHeight) {
-                const diff = neededHeight - el.height;
-                return {
-                  ...el,
-                  height: neededHeight,
-                  y: el.y - diff / 2
-                };
+              const paddingY = 32; // Top + Bottom padding
+              const neededHeight = boundText.height + paddingY;
+              
+              const paddingX = 40; // Left + Right padding
+              const neededWidth = boundText.width + paddingX;
+              
+              let newWidth = el.width;
+              let newX = el.x;
+              let newHeight = el.height;
+              let newY = el.y;
+              
+              if (el.width < neededWidth) {
+                const diffW = neededWidth - el.width;
+                newWidth = neededWidth;
+                newX = el.x - diffW / 2;
               }
+              
+              if (el.height < neededHeight) {
+                const diffH = neededHeight - el.height;
+                newHeight = neededHeight;
+                newY = el.y - diffH / 2;
+              }
+              
+              return {
+                ...el,
+                width: newWidth,
+                x: newX,
+                height: newHeight,
+                y: newY
+              };
             }
           }
           return el;
