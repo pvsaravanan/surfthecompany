@@ -78,16 +78,61 @@ const CompanyMindMap: React.FC<CompanyMindMapProps> = ({ data }) => {
             fontSize: '14px',
           }
         });
-        const excalidrawElements = convertToExcalidrawElements(parsedElements).map((el: any) => {
+        const baseElements = convertToExcalidrawElements(parsedElements);
+        
+        // Update text content and estimate heights
+        const updatedElements = baseElements.map((el: any) => {
           if (el.type === "text" && el.text) {
             const newText = el.text.replace(/\\n|<br\s*\/?>/gi, "\n");
-            if (newText !== el.text) {
-              return { ...el, text: newText };
+            const lineCount = newText.split('\n').length;
+            const estimatedHeight = lineCount * 18; // approx 18px per line
+            return {
+              ...el,
+              text: newText,
+              height: estimatedHeight
+            };
+          }
+          return el;
+        });
+
+        // Adjust containers to fit text
+        const finalElements = updatedElements.map((el: any) => {
+          if (el.type === "rectangle") {
+            const boundText = updatedElements.find(
+              (textEl: any) => textEl.type === "text" && textEl.containerId === el.id
+            );
+            if (boundText) {
+              const padding = 32; // Top + Bottom padding
+              const neededHeight = boundText.height + padding;
+              if (el.height < neededHeight) {
+                const diff = neededHeight - el.height;
+                return {
+                  ...el,
+                  height: neededHeight,
+                  y: el.y - diff / 2
+                };
+              }
             }
           }
           return el;
         });
-        setElements(excalidrawElements);
+
+        // Center text inside updated containers
+        const positionedElements = finalElements.map((el: any) => {
+          if (el.type === "text" && el.containerId) {
+            const container = finalElements.find((c: any) => c.id === el.containerId);
+            if (container) {
+              return {
+                ...el,
+                y: container.y + (container.height - el.height) / 2,
+                x: container.x + (container.width - el.width) / 2
+              };
+            }
+          }
+          return el;
+        });
+
+        setElements(positionedElements);
       } catch (err) {
         console.error('Failed to convert mermaid to excalidraw:', err);
       }
