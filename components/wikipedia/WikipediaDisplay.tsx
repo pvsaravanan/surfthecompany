@@ -30,15 +30,17 @@ const extractCompanyName = (url: string): string => {
   }
 };
 
-// Function to check if company name exists in Wikipedia URL
+// Function to check if company name exists in Wikipedia URL (robust matching)
 const isCompanyWikipedia = (wikiUrl: string, companyName: string): boolean => {
   try {
     // Extract the part after /wiki/
     const wikiPath = wikiUrl.split('/wiki/')[1];
-    // Decode URI component to handle special characters
-    const decodedPath = decodeURIComponent(wikiPath).toLowerCase();
-    // Check if company name exists in the path
-    return decodedPath.includes(companyName);
+    // Decode URI component and normalize separators
+    const decodedPath = decodeURIComponent(wikiPath).toLowerCase().replace(/_/g, '').replace(/-/g, '');
+    const cleanCompany = companyName.toLowerCase().split('-')[0].split('_')[0];
+    
+    // Check if the wikipedia URL path contains the company name, or vice versa
+    return decodedPath.includes(cleanCompany) || cleanCompany.includes(decodedPath);
   } catch (error) {
     return false;
   }
@@ -53,8 +55,9 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
     return null;
   }
 
-  // Ensure the URL is a Wikipedia article
-  if (!data.url || !data.url.includes('wikipedia.org')) {
+  // Ensure the URL is a Wikipedia article and matches the company
+  const companyName = extractCompanyName(websiteUrl);
+  if (!companyName || !data.url || !data.url.includes('wikipedia.org') || !isCompanyWikipedia(data.url, companyName)) {
     return null;
   }
 
