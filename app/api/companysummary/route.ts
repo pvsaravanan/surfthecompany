@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export const maxDuration = 100;
 
@@ -14,6 +15,10 @@ export async function POST(req: NextRequest) {
     if (!subpages || !mainpage) {
       return NextResponse.json({ error: 'Mainpage or subpage content is required' }, { status: 400 });
     }
+
+    const key = cacheKey('companysummary', { websiteurl });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
 
     const subpagesText = JSON.stringify(subpages, null, 2);
     const mainpageText = JSON.stringify(mainpage, null, 2);
@@ -77,7 +82,9 @@ export async function POST(req: NextRequest) {
     });
     
     // Return the sections array from the response
-    return NextResponse.json({ result: object.sections });
+    const response = { result: object.sections };
+    setCache(key, response);
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Company summary API error:', error);

@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export const maxDuration = 100;
 
@@ -14,6 +15,10 @@ export async function POST(req: NextRequest) {
     if (!mainpage) {
       return NextResponse.json({ error: 'Mainpage content is required' }, { status: 400 });
     }
+
+    const key = cacheKey('companymap', { websiteurl });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
 
     const mainpageText = JSON.stringify(mainpage, null, 2);
 
@@ -88,7 +93,9 @@ export async function POST(req: NextRequest) {
 
     console.log(object);
     
-    return NextResponse.json({ result: object });
+    const response = { result: object };
+    setCache(key, response);
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Company mind map API error:', error);

@@ -5,6 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export const maxDuration = 60;
 
@@ -39,6 +40,10 @@ export async function POST(req: NextRequest) {
     if (!websiteurl) {
       return NextResponse.json({ error: 'websiteurl is required' }, { status: 400 });
     }
+
+    const key = cacheKey('fetchwikipedia', { websiteurl });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
 
     const companyName = extractCompanyName(websiteurl);
     let wikiData = null;
@@ -112,7 +117,9 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    return NextResponse.json({ results: [wikiData] });
+    const response = { results: [wikiData] };
+    setCache(key, response);
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json({ error: `Failed to perform search | ${error}` }, { status: 500 });
   }

@@ -5,6 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export const maxDuration = 60;
 
@@ -18,6 +19,10 @@ export async function POST(req: NextRequest) {
     }
 
     const companyName = websiteurl.replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
+    const key = cacheKey('scrapereddit', { websiteurl });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
+
     let redditResults: Array<{ url: string; title: string }> = [];
 
     try {
@@ -85,7 +90,9 @@ export async function POST(req: NextRequest) {
       redditResults = object.posts;
     }
 
-    return NextResponse.json({ results: redditResults });
+    const response = { results: redditResults };
+    setCache(key, response);
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json({ error: `Failed to perform search | ${error}` }, { status: 500 });
   }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export const maxDuration = 60;
 
@@ -8,6 +9,10 @@ export async function POST(req: NextRequest) {
     if (!githubUrl) {
       return NextResponse.json({ error: 'GitHub URL is required' }, { status: 400 });
     }
+
+    const key = cacheKey('fetchgithubprofile', { githubUrl });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
 
     // Extract username from GitHub URL
     const username = githubUrl.replace(/\/$/, '').split('/').pop();
@@ -39,12 +44,14 @@ export async function POST(req: NextRequest) {
     const profileData = await profileResponse.json();
     const reposData = reposResponse.ok ? await reposResponse.json() : [];
 
-    return NextResponse.json({
+    const response = {
       result: {
         ...profileData,
         repositories: reposData,
       },
-    });
+    };
+    setCache(key, response);
+    return NextResponse.json(response);
   } catch (error) {
     console.error('GitHub profile API error:', error);
     return NextResponse.json(

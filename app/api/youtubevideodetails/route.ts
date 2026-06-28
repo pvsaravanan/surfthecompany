@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCached, setCache, cacheKey } from '@/lib/cache';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,6 +10,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const key = cacheKey('youtubevideodetails', { ids: videoIds });
+    const cached = getCached(key);
+    if (cached) return NextResponse.json(cached);
+
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${process.env.YOUTUBE_API_KEY}`,
       { next: { revalidate: 3600 } } // Cache for 1 hour
@@ -27,6 +32,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    setCache(key, formattedData);
     return NextResponse.json(formattedData);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch video details' }, { status: 500 });
