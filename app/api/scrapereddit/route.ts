@@ -13,12 +13,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Website URL is required' }, { status: 400 });
     }
 
+    const companyName = websiteurl.replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
+
     const result = await exa.search(
-      `${websiteurl} reddit posts`,
+      `${companyName}`,
       {
-        type: "keyword",
+        type: "neural",
         includeDomains: ["reddit.com"],
-        includeText: [websiteurl]
+        numResults: 10
       }
     );
 
