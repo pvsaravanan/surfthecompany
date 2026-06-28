@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Exa from "exa-js";
-import { anthropic } from "@ai-sdk/anthropic";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import { getCached, setCache, cacheKey } from '@/lib/cache';
+import { getModel } from '@/lib/model';
 
 export const maxDuration = 60;
 
@@ -52,30 +50,7 @@ export async function POST(req: NextRequest) {
         }))
       });
 
-      const hasNvidiaKey = process.env.NVIDIA_API_KEY &&
-        process.env.NVIDIA_API_KEY !== 'your_nvidia_api_key' &&
-        process.env.NVIDIA_API_KEY.trim() !== '';
-
-      const hasGeminiKey = process.env.GEMINI_API_KEY && 
-        process.env.GEMINI_API_KEY !== 'your_gemini_api_key' && 
-        process.env.GEMINI_API_KEY.trim() !== '';
-
-      let selectedModel: any;
-
-      if (hasNvidiaKey) {
-        const nvidiaProvider = createOpenAI({
-          apiKey: process.env.NVIDIA_API_KEY,
-          baseURL: 'https://integrate.api.nvidia.com/v1',
-        });
-        selectedModel = nvidiaProvider('nvidia/nemotron-3-nano-30b-a3b');
-      } else if (hasGeminiKey) {
-        const googleProvider = createGoogleGenerativeAI({
-          apiKey: process.env.GEMINI_API_KEY,
-        });
-        selectedModel = googleProvider('gemini-1.5-flash');
-      } else {
-        selectedModel = anthropic('claude-3-7-sonnet-latest');
-      }
+      const selectedModel = getModel();
 
       const cleanName = companyName.charAt(0).toUpperCase() + companyName.slice(1);
 

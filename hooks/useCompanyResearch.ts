@@ -9,6 +9,12 @@ import type {
   NewsItem,
   Founder,
   CompanyMapData,
+  CompanySummary,
+  TwitterProfileText,
+  FundingData,
+  FinancialReport,
+  ProfileDirectoryData,
+  WikipediaData,
 } from "@/components/types/research.types";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -93,19 +99,19 @@ export function useCompanyResearch() {
   const [linkedinData, setLinkedinData] = useState<LinkedInData | null>(null);
   const [competitors, setCompetitors] = useState<Competitor[] | null>(null);
   const [news, setNews] = useState<NewsItem[] | null>(null);
-  const [companySummary, setCompanySummary] = useState<any>(null);
-  const [twitterProfileText, setTwitterProfileText] = useState<any>(null);
+  const [companySummary, setCompanySummary] = useState<CompanySummary | null>(null);
+  const [twitterProfileText, setTwitterProfileText] = useState<TwitterProfileText | null>(null);
   const [recentTweets, setRecentTweets] = useState<Tweet[] | null>(null);
   const [youtubeVideos, setYoutubeVideos] = useState<Video[] | null>(null);
   const [redditPosts, setRedditPosts] = useState<RedditPost[] | null>(null);
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
-  const [fundingData, setFundingData] = useState<any>(null);
-  const [financialReport, setFinancialReport] = useState<any>(null);
-  const [tiktokData, setTiktokData] = useState<any>(null);
-  const [wikipediaData, setWikipediaData] = useState<any>(null);
-  const [crunchbaseData, setCrunchbaseData] = useState<any>(null);
-  const [pitchbookData, setPitchbookData] = useState<any>(null);
-  const [tracxnData, setTracxnData] = useState<any>(null);
+  const [fundingData, setFundingData] = useState<FundingData | null>(null);
+  const [financialReport, setFinancialReport] = useState<FinancialReport | null>(null);
+  const [tiktokData, setTiktokData] = useState<ProfileDirectoryData | null>(null);
+  const [wikipediaData, setWikipediaData] = useState<WikipediaData | null>(null);
+  const [crunchbaseData, setCrunchbaseData] = useState<ProfileDirectoryData | null>(null);
+  const [pitchbookData, setPitchbookData] = useState<ProfileDirectoryData | null>(null);
+  const [tracxnData, setTracxnData] = useState<ProfileDirectoryData | null>(null);
   const [founders, setFounders] = useState<Founder[] | null>(null);
   const [companyMap, setCompanyMap] = useState<CompanyMapData | null>(null);
 
@@ -197,41 +203,41 @@ export function useCompanyResearch() {
     return data.results && data.results.length > 0 ? data.results[0].url : null;
   }
 
-  async function fetchFunding(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchfunding", { websiteurl: url });
+  async function fetchFunding(url: string): Promise<FundingData | null> {
+    const data = await postJson<{ results: FundingData[] }>("/api/fetchfunding", { websiteurl: url });
     return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 
-  async function fetchFinancialReport(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any }>("/api/fetchfinancialreport", { websiteurl: url });
+  async function fetchFinancialReport(url: string): Promise<FinancialReport | null> {
+    const data = await postJson<{ results: FinancialReport }>("/api/fetchfinancialreport", { websiteurl: url });
     return data.results || null;
   }
 
-  async function fetchTikTokProfile(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchtiktok", { websiteurl: url });
+  async function fetchTikTokProfile(url: string): Promise<ProfileDirectoryData | null> {
+    const data = await postJson<{ results: ProfileDirectoryData[] }>("/api/fetchtiktok", { websiteurl: url });
     return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 
-  async function fetchWikipedia(url: string): Promise<{ text: string; url: string } | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchwikipedia", { websiteurl: url });
+  async function fetchWikipedia(url: string): Promise<WikipediaData | null> {
+    const data = await postJson<{ results: WikipediaData[] }>("/api/fetchwikipedia", { websiteurl: url });
     if (data.results && data.results.length > 0) {
-      return { text: data.results[0].text, url: data.results[0].url };
+      return data.results[0];
     }
     return null;
   }
 
-  async function fetchCrunchbase(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchcrunchbase", { websiteurl: url });
+  async function fetchCrunchbase(url: string): Promise<ProfileDirectoryData | null> {
+    const data = await postJson<{ results: ProfileDirectoryData[] }>("/api/fetchcrunchbase", { websiteurl: url });
     return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 
-  async function fetchPitchbook(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchpitchbook", { websiteurl: url });
+  async function fetchPitchbook(url: string): Promise<ProfileDirectoryData | null> {
+    const data = await postJson<{ results: ProfileDirectoryData[] }>("/api/fetchpitchbook", { websiteurl: url });
     return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 
-  async function fetchTracxn(url: string): Promise<any | null> {
-    const data = await postJson<{ results: any[] }>("/api/fetchtracxn", { websiteurl: url });
+  async function fetchTracxn(url: string): Promise<ProfileDirectoryData | null> {
+    const data = await postJson<{ results: ProfileDirectoryData[] }>("/api/fetchtracxn", { websiteurl: url });
     return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 

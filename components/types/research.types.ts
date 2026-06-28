@@ -64,3 +64,43 @@ export interface CompanyMapData {
     }>;
   };
 }
+
+export interface SummaryItem {
+  heading: string;
+  text: string;
+}
+
+export type CompanySummary = SummaryItem[];
+
+export interface TwitterProfileText {
+  text: string;
+  username: string;
+}
+
+export interface FundingData {
+  summary: string;
+  url: string;
+  favicon?: string;
+}
+
+export interface FinancialReportItem {
+  id: string;
+  url: string;
+  title: string;
+  author: string | null;
+}
+
+export type FinancialReport = FinancialReportItem[];
+
+export interface ProfileDirectoryData {
+  url: string;
+  title: string;
+}
+
+export interface WikipediaData {
+  text?: string;
+  url?: string;
+  title?: string;
+  isFallback?: boolean;
+}
+
