@@ -28,7 +28,12 @@ export async function POST(req: NextRequest) {
           numResults: 30
         }
       );
-      redditResults = result.results.filter((r: any) => r.url.includes('reddit.com'));
+      redditResults = result.results
+        .filter((r: any) => r.url.includes('reddit.com'))
+        .map((r: any) => ({
+          url: r.url,
+          title: r.title || 'Reddit Post'
+        }));
     } catch (e) {
       console.warn("Exa Reddit search failed, falling back to LLM generation:", e);
     }

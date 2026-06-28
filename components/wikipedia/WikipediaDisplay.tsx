@@ -7,6 +7,7 @@ interface WikipediaDisplayProps {
     text?: string;
     url?: string;
     title?: string;
+    isFallback?: boolean;
   };
   websiteUrl: string;
 }
@@ -57,7 +58,7 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
 
   // Ensure the URL is a Wikipedia article and matches the company
   const companyName = extractCompanyName(websiteUrl);
-  if (!companyName || !data.url || !data.url.includes('wikipedia.org') || !isCompanyWikipedia(data.url, companyName)) {
+  if (!companyName || !data.url || !data.url.includes('wikipedia.org') || (!data.isFallback && !isCompanyWikipedia(data.url, companyName))) {
     return null;
   }
 
@@ -187,14 +188,25 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
   return (
     <div className="bg-white rounded-lg shadow-md p-8 transition-all duration-300 hover:shadow-lg">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8 border-b pb-4">
-        <div className="bg-[#f6f6f6] p-3 rounded-full">
-          <FaWikipediaW className="text-2xl text-[#666]" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 border-b pb-4">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#f6f6f6] p-3 rounded-full">
+            <FaWikipediaW className="text-2xl text-[#666]" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">Wikipedia</h2>
+            <p className="text-sm text-gray-500">
+              {data.isFallback 
+                ? "Official Wikipedia page not found. Showing AI-generated overview." 
+                : "From Wikipedia, the free encyclopedia"}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Wikipedia</h2>
-          <p className="text-sm text-gray-500">From Wikipedia, the free encyclopedia</p>
-        </div>
+        {data.isFallback && (
+          <span className="self-start sm:self-center text-xs px-2.5 py-1 font-medium bg-amber-50 text-amber-800 border border-amber-200/60 rounded-full">
+            AI Generated Fallback
+          </span>
+        )}
       </div>
 
       {/* Summary */}
