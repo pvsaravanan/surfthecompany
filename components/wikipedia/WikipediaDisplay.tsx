@@ -53,9 +53,8 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
     return null;
   }
 
-  // Extract company name and check if Wikipedia article matches
-  const companyName = extractCompanyName(websiteUrl);
-  if (!companyName || !data.url || !isCompanyWikipedia(data.url, companyName)) {
+  // Ensure the URL is a Wikipedia article
+  if (!data.url || !data.url.includes('wikipedia.org')) {
     return null;
   }
 
