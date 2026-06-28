@@ -54,32 +54,19 @@ export default function GitHubDisplay({ githubUrl }: GitHubDisplayProps) {
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        // Extract username from GitHub URL
-        const username = githubUrl.split('/').pop();
-        if (!username) throw new Error('Invalid GitHub URL');
-
-        const headers = {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-        };
-
-        // Fetch profile data
-        const profileResponse = await fetch(`https://api.github.com/users/${username}`, { headers });
-        if (!profileResponse.ok) throw new Error('Failed to fetch GitHub profile');
-        const profileData = await profileResponse.json();
-
-        // Fetch repositories with sort parameter in the API URL
-        const reposResponse = await fetch(
-          `https://api.github.com/users/${username}/repos?sort=stars&direction=desc&per_page=6`,
-          { headers }
-        );
-        if (!reposResponse.ok) throw new Error('Failed to fetch repositories');
-        const reposData = await reposResponse.json();
-
-        setProfile({
-          ...profileData,
-          repositories: reposData
+        const response = await fetch('/api/fetchgithubprofile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ githubUrl }),
         });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error((errData as any).error || 'Failed to fetch GitHub profile');
+        }
+
+        const data = await response.json();
+        setProfile(data.result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch GitHub data');
       } finally {

@@ -75,7 +75,7 @@ Configure the environment variables in a `.env.local` file in the root of the pr
 | EXA_API_KEY | Yes | API Key from the Exa Dashboard |
 | ANTHROPIC_API_KEY | Yes | API Key from the Anthropic Console |
 | YOUTUBE_API_KEY | No | Optional API Key for YouTube features |
-| NEXT_PUBLIC_GITHUB_TOKEN | No | Optional Personal Access Token for GitHub features |
+| GITHUB_TOKEN | No | Optional Personal Access Token for GitHub features |
 
 ## About Exa.ai
 
