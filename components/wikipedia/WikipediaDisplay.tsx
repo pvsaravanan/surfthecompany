@@ -113,14 +113,38 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
       if (
         paragraph.length > 80 &&
         !paragraph.includes('From Wikipedia') &&
-        !paragraph.startsWith('Jump to') &&
-        (paragraph.includes(' is ') || paragraph.includes(' was ') || paragraph.includes(' are ') || paragraph.includes(' were '))
+        !paragraph.startsWith('Jump to')
       ) {
-        return paragraph;
+        const verbs = [' is ', ' was ', ' are ', ' were '];
+        let earliestIndex = -1;
+        
+        for (const verb of verbs) {
+          const idx = paragraph.indexOf(verb);
+          if (idx !== -1 && (earliestIndex === -1 || idx < earliestIndex)) {
+            earliestIndex = idx;
+          }
+        }
+        
+        if (earliestIndex !== -1) {
+          return paragraph.substring(earliestIndex + 1);
+        }
       }
     }
     
-    return cleanText(text).slice(0, 300) + '...';
+    const fallback = cleanText(text);
+    const verbs = [' is ', ' was ', ' are ', ' were '];
+    let earliestIndex = -1;
+    for (const verb of verbs) {
+      const idx = fallback.indexOf(verb);
+      if (idx !== -1 && (earliestIndex === -1 || idx < earliestIndex)) {
+        earliestIndex = idx;
+      }
+    }
+    if (earliestIndex !== -1) {
+      return fallback.substring(earliestIndex + 1).slice(0, 300) + '...';
+    }
+    
+    return fallback.slice(0, 300) + '...';
   };
 
   // Function to extract timeline events
