@@ -4,29 +4,18 @@ import type {
   LinkedInData,
   Video,
   RedditPost,
-  Tweet,
   Competitor,
   NewsItem,
   Founder,
   CompanyMapData,
   CompanySummary,
-  TwitterProfileText,
   FundingData,
   FinancialReport,
   ProfileDirectoryData,
   WikipediaData,
 } from "@/components/types/research.types";
 
-// ─── helpers ────────────────────────────────────────────────────────────────
 
-function extractXHandle(url: string): string | null {
-  try {
-    const match = url.match(/(?:twitter|x)\.com\/([a-zA-Z0-9_]+)/i);
-    return match && match[1] !== 'search' && match[1] !== 'intent' && match[1] !== 'share' ? match[1] : null;
-  } catch {
-    return null;
-  }
-}
 
 function isValidUrl(url: string): boolean {
   try {
@@ -109,9 +98,7 @@ export function useCompanyResearch() {
   const [competitors, setCompetitors] = useState<Competitor[] | null>(null);
   const [news, setNews] = useState<NewsItem[] | null>(null);
   const [companySummary, setCompanySummary] = useState<CompanySummary | null>(null);
-  const [twitterProfileText, setTwitterProfileText] = useState<TwitterProfileText | null>(null);
-  const [recentTweets, setRecentTweets] = useState<Tweet[] | null>(null);
-  const [recentMentions, setRecentMentions] = useState<Tweet[] | null>(null);
+
   const [youtubeVideos, setYoutubeVideos] = useState<Video[] | null>(null);
   const [redditPosts, setRedditPosts] = useState<RedditPost[] | null>(null);
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
@@ -178,30 +165,7 @@ export function useCompanyResearch() {
     return data.results.filter((item: any) => item.title).slice(0, 6);
   }
 
-  async function fetchRecentTweets(username: string): Promise<Tweet[]> {
-    const data = await postJson<{ results: Tweet[] }>("/api/scraperecenttweets", { username });
-    return data.results || [];
-  }
 
-  async function fetchTwitterMentions(url: string): Promise<Tweet[]> {
-    const data = await postJson<{ results: Tweet[] }>("/api/scrapetwittermentions", { websiteurl: url });
-    return data.results || [];
-  }
-
-  async function fetchTwitterProfile(url: string): Promise<{ text: string; username: string } | null> {
-    const data = await postJson<{ results: any[] }>("/api/scrapetwitterprofile", { websiteurl: url });
-    if (data.results && data.results.length > 0) {
-      const result = data.results[0];
-      const cleanHandle = extractXHandle(result.url) || result.author;
-      if (cleanHandle) {
-        fetchRecentTweets(cleanHandle)
-          .then((tweets) => setRecentTweets(tweets))
-          .catch((err) => console.error("Error fetching recent tweets:", err));
-      }
-      return { text: result.text, username: cleanHandle || result.author || "" };
-    }
-    return null;
-  }
 
   async function fetchYoutubeVideos(url: string): Promise<Video[]> {
     const data = await postJson<{ results: Video[] }>("/api/fetchyoutubevideos", { websiteurl: url });
@@ -289,9 +253,7 @@ export function useCompanyResearch() {
     setCompetitors(null);
     setNews(null);
     setCompanySummary(null);
-    setTwitterProfileText(null);
-    setRecentTweets(null);
-    setRecentMentions(null);
+
     setYoutubeVideos(null);
     setRedditPosts(null);
     setGithubUrl(null);
@@ -324,8 +286,7 @@ export function useCompanyResearch() {
         // Independent parallel fetches
         fetchLinkedInData(domainName).then(setLinkedinData).catch((err) => addError("linkedin", err)),
         fetchNews(domainName).then(setNews).catch((err) => addError("news", err)),
-        fetchTwitterProfile(domainName).then(setTwitterProfileText).catch((err) => addError("twitter", err)),
-        fetchTwitterMentions(domainName).then(setRecentMentions).catch((err) => addError("mentions", err)),
+
         fetchYoutubeVideos(domainName).then(setYoutubeVideos).catch((err) => addError("youtube", err)),
         fetchRedditPosts(domainName).then(setRedditPosts).catch((err) => addError("reddit", err)),
         fetchGitHubUrl(domainName).then(setGithubUrl).catch((err) => addError("github", err)),
@@ -356,9 +317,7 @@ export function useCompanyResearch() {
     competitors,
     news,
     companySummary,
-    twitterProfileText,
-    recentTweets,
-    recentMentions,
+
     youtubeVideos,
     redditPosts,
     githubUrl,

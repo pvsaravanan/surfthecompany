@@ -18,9 +18,6 @@ export default function SurfTheCompany() {
     competitors,
     news,
     companySummary,
-    twitterProfileText,
-    recentTweets,
-    recentMentions,
     youtubeVideos,
     redditPosts,
     githubUrl,
@@ -87,9 +84,6 @@ export default function SurfTheCompany() {
 
           <CompanySocialsSection
             isGenerating={isGenerating}
-            twitterProfileText={twitterProfileText}
-            recentTweets={recentTweets}
-            recentMentions={recentMentions}
             youtubeVideos={youtubeVideos}
             redditPosts={redditPosts}
             githubUrl={githubUrl}

@@ -22,13 +22,7 @@ export interface RedditPost {
   [key: string]: any;
 }
 
-export interface Tweet {
-  id: string;
-  url: string;
-  title: string;
-  author: string;
-  [key: string]: any;
-}
+
 
 export interface Competitor {
   title: string;
@@ -72,10 +66,7 @@ export interface SummaryItem {
 
 export type CompanySummary = SummaryItem[];
 
-export interface TwitterProfileText {
-  text: string;
-  username: string;
-}
+
 
 export interface FundingData {
   summary: string;
