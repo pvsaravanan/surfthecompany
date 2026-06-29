@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,8 +80,8 @@ body {
   --border-radius-default: 2px;
 
   /* Typography */
-  --font-family-sans: 'ABCDiatype', 'Trebuchet MS', sans-serif;
-  --font-family-serif: 'Reckless', Georgia, serif;
+  --font-family-sans: 'Outfit', sans-serif;
+  --font-family-serif: 'Source Serif 4', Georgia, serif;
   --text-light-default: #111827;
   --text-light-muted: #6b7280;
   --text-light-subtle: #9ca3af;
@@ -91,13 +93,14 @@ body {
   color: var(--foreground);
   background: var(--background);
 
-  /* Apply ABCDiatype for body */
-  font-family: var(--font-abcd-diatype), sans-serif;
+  /* Apply Outfit for body */
+  font-family: 'Outfit', sans-serif;
 }
 
-/* Apply Reckless for headings */
+/* Apply Source Serif 4 for headings */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-reckless), serif;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-style: italic;
 }
 
 

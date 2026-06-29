@@ -95,6 +95,7 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
   // Function to clean text
   const cleanText = (text: string) => {
     return decodeHtmlEntities(text)
+      .replace(/#+\s*/g, '')          // Strip markdown headers like ##, ###, etc.
       .replace(/\[\s*\d+\s*\]/g, '') // Remove citation numbers with possible spaces [1], [ 1 ], etc.
       .replace(/\[ citation needed \]/g, '')
       .replace(/\s+/g, ' ')
@@ -171,16 +172,34 @@ const WikipediaDisplay: React.FC<WikipediaDisplayProps> = ({ data, websiteUrl })
   // Function to extract timeline events
   const extractTimeline = (text: string) => {
     const events: { year: string; event: string }[] = [];
-    const lines = text.split(/\.\s+/); // Split by periods for complete sentences
+    
+    // Remove markdown tables entirely before processing sentences
+    const cleanSourceText = text
+      .split('\n')
+      .filter(line => !line.trim().startsWith('|') && !line.includes('| - |') && !line.includes('|-'))
+      .join('\n');
+
+    const lines = cleanSourceText.split(/\.\s+/); // Split by periods for complete sentences
     
     lines.forEach(line => {
       const cleanLine = cleanText(line);
+      
+      // If the line contains more than one pipe delimiter, it is likely leftover table/infobox text
+      const pipeCount = (cleanLine.match(/\|/g) || []).length;
+      if (pipeCount > 1) return;
+
       // Match "In YYYY" pattern
       const match = cleanLine.match(/In (19|20)\d{2}/);
       
       if (match) {
         const year = match[0].replace('In ', '');
         let event = cleanLine;
+        
+        // Strip leading headers or section titles like "History In YYYY" or "Origins In YYYY"
+        const yearIndex = event.indexOf(match[0]);
+        if (yearIndex > 0) {
+          event = event.substring(yearIndex);
+        }
         
         // Remove any reference links at the end and citation numbers
         event = event.replace(/\^.*$/, '').trim();
