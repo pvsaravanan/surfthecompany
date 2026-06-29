@@ -40,24 +40,7 @@ export const YouTubeSkeleton = () => (
   </div>
 );
 
-export const TikTokSkeleton = () => (
-  <div className="space-y-6 min-h-[350px]">
-    <div className="flex items-center">
-      <Skeleton className="h-7 w-[150px]" />
-    </div>
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="rounded-lg overflow-hidden">
-          <Skeleton className="h-64 w-full" />
-          <div className="p-3 space-y-2">
-            <Skeleton className="h-4 w-[80%]" />
-            <Skeleton className="h-4 w-[60%]" />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+
 
 export const GitHubSkeleton = () => (
   <div className="space-y-6 min-h-[180px] rounded-lg p-6">

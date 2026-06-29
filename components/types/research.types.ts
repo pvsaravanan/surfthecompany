@@ -102,5 +102,6 @@ export interface WikipediaData {
   url?: string;
   title?: string;
   isFallback?: boolean;
+  notFound?: boolean;
 }
 

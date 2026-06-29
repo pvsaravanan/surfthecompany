@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -14,8 +14,6 @@
     "@ai-sdk/openai": "^4.0.1",
     "@ai-sdk/openai-compatible": "^3.0.0",
     "@babel/runtime": "^7.27.1",
-    "@excalidraw/excalidraw": "^0.18.1",
-    "@excalidraw/mermaid-to-excalidraw": "^2.2.2",
     "@vercel/analytics": "^1.4.1",
     "ai": "^7.0.3",
     "clsx": "^2.1.1",

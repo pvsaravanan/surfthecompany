@@ -11,31 +11,23 @@ interface CompanySummaryProps {
 
 const CompanySummary: React.FC<CompanySummaryProps> = ({ summary }) => {
   return (
-    <div className="w-full space-y-4">
-      <div className="bg-white border shadow-sm p-4 sm:p-8 mt-2">
-        <div className="space-y-6">
-          {summary.map((item, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex items-start gap-2 sm:gap-3">
-                <div className="space-y-2 sm:space-y-3 pt-1 w-full">
-                  <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
-                    {item.heading}
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    {item.text}
-                  </p>
-                </div>
-              </div>
-              
-              {index < summary.length - 1 && (
-                <div className="pt-4 sm:pt-6">
-                  <div className="border-t border-gray-100"></div>
-                </div>
-              )}
-            </div>
-          ))}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+      {summary.map((item, index) => (
+        <div 
+          key={index} 
+          className="bg-white border border-gray-100 shadow-sm p-6 hover:shadow-md hover:border-brand-default/20 transition-all duration-300 flex flex-col justify-between"
+        >
+          <div className="space-y-3">
+            <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2 border-b border-gray-50 pb-2">
+              <span className="w-1.5 h-5 bg-brand-default rounded-sm inline-block shrink-0"></span>
+              {item.heading}
+            </h3>
+            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+              {item.text}
+            </p>
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 };

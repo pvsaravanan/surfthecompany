@@ -1,14 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-import "@excalidraw/excalidraw/index.css";
-
-// Dynamically import Excalidraw with SSR disabled
-const Excalidraw = dynamic(
-  () => import('@excalidraw/excalidraw').then((mod) => mod.Excalidraw),
-  { ssr: false }
-);
+import React, { useEffect, useState, useRef } from 'react';
 
 interface MindMapNode {
   title: string;
@@ -28,162 +20,88 @@ interface CompanyMindMapProps {
   data: CompanyMapData;
 }
 
-const cleanText = (text: string) => {
-  return text
-    .replace(/["'\[\]\(\)\{\}\-\->]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
-const generateMermaidCode = (data: CompanyMapData) => {
-  let mermaid = 'flowchart LR\n';
-  
-  // Central Root Node
-  const rootText = `${cleanText(data.companyName)}<br/>(${cleanText(data.rootNode.title)})`;
-  mermaid += `  root["${rootText}"]\n`;
-  
-  // Level 1 and Level 2 Nodes
-  data.rootNode.children.forEach((l1Node, l1Idx) => {
-    const l1Id = `l1_${l1Idx}`;
-    const l1Text = cleanText(l1Node.title);
-    mermaid += `  ${l1Id}["${l1Text}"]\n`;
-    mermaid += `  root --> ${l1Id}\n`;
-    
-    const l2Nodes = l1Node.children || [];
-    l2Nodes.forEach((l2Node, l2Idx) => {
-      const l2Id = `l2_${l1Idx}_${l2Idx}`;
-      const l2Text = `${cleanText(l2Node.title)}<br/>${cleanText(l2Node.description || '')}`;
-      mermaid += `  ${l2Id}["${l2Text}"]\n`;
-      mermaid += `  ${l1Id} --> ${l2Id}\n`;
-    });
-  });
-  
-  return mermaid;
-};
-
 const CompanyMindMap: React.FC<CompanyMindMapProps> = ({ data }) => {
-  const [elements, setElements] = useState<any[]>([]);
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const convertData = async () => {
+    let cancelled = false;
+
+    const fetchSvg = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw');
-        const { parseMermaidToExcalidraw } = await import('@excalidraw/mermaid-to-excalidraw');
-        
-        const mermaidCode = generateMermaidCode(data);
-        console.log('Generated Mermaid code:\n', mermaidCode);
-
-        const { elements: parsedElements } = await parseMermaidToExcalidraw(mermaidCode, {
-          themeVariables: {
-            fontSize: '14px',
-          }
-        });
-        const baseElements = convertToExcalidrawElements(parsedElements);
-        
-        // Update text content and estimate dimensions
-        const updatedElements = baseElements.map((el: any) => {
-          if (el.type === "text" && el.text) {
-            const newText = el.text.replace(/\\n|<br\s*\/?>/gi, "\n");
-            const lines = newText.split('\n');
-            const lineCount = lines.length;
-            const estimatedHeight = lineCount * 18; // approx 18px per line
-            
-            const maxLineLength = Math.max(...lines.map((line: string) => line.length));
-            const estimatedWidth = maxLineLength * 9.5; // approx 9.5px per character
-            
-            return {
-              ...el,
-              text: newText,
-              height: estimatedHeight,
-              width: estimatedWidth
-            };
-          }
-          return el;
+        const res = await fetch('/api/rendermindmap', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
         });
 
-        // Adjust containers to fit text (both height and width)
-        const finalElements = updatedElements.map((el: any) => {
-          if (el.type === "rectangle") {
-            const boundText = updatedElements.find(
-              (textEl: any) => textEl.type === "text" && textEl.containerId === el.id
-            );
-            if (boundText) {
-              const paddingY = 32; // Top + Bottom padding
-              const neededHeight = boundText.height + paddingY;
-              
-              const paddingX = 40; // Left + Right padding
-              const neededWidth = boundText.width + paddingX;
-              
-              let newWidth = el.width;
-              let newX = el.x;
-              let newHeight = el.height;
-              let newY = el.y;
-              
-              if (el.width < neededWidth) {
-                const diffW = neededWidth - el.width;
-                newWidth = neededWidth;
-                newX = el.x - diffW / 2;
-              }
-              
-              if (el.height < neededHeight) {
-                const diffH = neededHeight - el.height;
-                newHeight = neededHeight;
-                newY = el.y - diffH / 2;
-              }
-              
-              return {
-                ...el,
-                width: newWidth,
-                x: newX,
-                height: newHeight,
-                y: newY
-              };
-            }
-          }
-          return el;
-        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to render mindmap');
+        }
 
-        // Center text inside updated containers
-        const positionedElements = finalElements.map((el: any) => {
-          if (el.type === "text" && el.containerId) {
-            const container = finalElements.find((c: any) => c.id === el.containerId);
-            if (container) {
-              return {
-                ...el,
-                y: container.y + (container.height - el.height) / 2,
-                x: container.x + (container.width - el.width) / 2
-              };
-            }
-          }
-          return el;
-        });
-
-        setElements(positionedElements);
+        const result = await res.json();
+        if (!cancelled) {
+          setSvgContent(result.svg);
+        }
       } catch (err) {
-        console.error('Failed to convert mermaid to excalidraw:', err);
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to render mindmap');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
-    
-    convertData();
+
+    fetchSvg();
+    return () => { cancelled = true; };
   }, [data]);
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-[400px] bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center animate-pulse">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm">Rendering Mind Map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[200px] bg-red-50 border border-red-200 rounded-xl flex items-center justify-center">
+        <p className="text-red-500 text-sm">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-[600px] bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative shadow-sm">
-      {elements.length > 0 && (
-        <Excalidraw
-          initialData={{
-            elements,
-            appState: {
-              viewBackgroundColor: '#f8fafc',
-              currentItemStrokeColor: '#1e293b',
-              currentItemFontFamily: 2,
-            },
-          }}
-          viewModeEnabled={true}
+    <div
+      ref={containerRef}
+      className="w-full bg-slate-50 border border-slate-200 rounded-xl overflow-auto shadow-sm p-4"
+    >
+      {svgContent && (
+        <div
+          className="mindmap-svg-container w-full flex items-center justify-center"
+          dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       )}
+      <style jsx global>{`
+        .mindmap-svg-container svg {
+          max-width: 100%;
+          height: auto;
+          min-height: 300px;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default CompanyMindMap; 
+export default CompanyMindMap;

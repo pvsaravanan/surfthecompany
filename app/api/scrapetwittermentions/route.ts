@@ -1,4 +1,4 @@
-// app/api/fetchtiktok/route.ts
+// app/api/scrapetwittermentions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import Exa from "exa-js";
 import { getCached, setCache, cacheKey } from '@/lib/cache';
@@ -10,22 +10,22 @@ const exa = new Exa(process.env.EXA_API_KEY as string);
 export async function POST(req: NextRequest) {
   try {
     const { websiteurl } = await req.json();
-
     if (!websiteurl) {
       return NextResponse.json({ error: 'websiteurl is required' }, { status: 400 });
     }
 
-    const key = cacheKey('fetchtiktok', { websiteurl });
+    const key = cacheKey('scrapetwittermentions', { websiteurl });
     const cached = getCached(key);
     if (cached) return NextResponse.json(cached);
 
-    const result = await exa.search(
-      `${websiteurl} TikTok:`,
+    const companyName = websiteurl.replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
+
+    const result = await exa.searchAndContents(
+      `(site:twitter.com OR site:x.com) "${companyName}"`,
       {
         type: "keyword",
-        numResults: 1,
-        includeDomains: ["tiktok.com"],
-        includeText: [websiteurl]
+        livecrawl: "always",
+        numResults: 10
       }
     );
 

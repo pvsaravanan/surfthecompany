@@ -20,15 +20,11 @@ export async function POST(req: NextRequest) {
     if (cached) return NextResponse.json(cached);
 
     const result = await exa.searchAndContents(
-        `from:${username}`,
+        `site:twitter.com/${username} OR site:x.com/${username}`,
         {
           type: "keyword",
           livecrawl: "always",
-          includeDomains: ["twitter.com"],
-          category: "tweet",
-          startPublishedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-          endPublishedDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          includeText: [username],
+          numResults: 10
         }
       )
 

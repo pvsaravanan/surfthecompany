@@ -19,6 +19,15 @@ import type {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+function extractXHandle(url: string): string | null {
+  try {
+    const match = url.match(/(?:twitter|x)\.com\/([a-zA-Z0-9_]+)/i);
+    return match && match[1] !== 'search' && match[1] !== 'intent' && match[1] !== 'share' ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 function isValidUrl(url: string): boolean {
   try {
     url = url.trim();
@@ -102,12 +111,12 @@ export function useCompanyResearch() {
   const [companySummary, setCompanySummary] = useState<CompanySummary | null>(null);
   const [twitterProfileText, setTwitterProfileText] = useState<TwitterProfileText | null>(null);
   const [recentTweets, setRecentTweets] = useState<Tweet[] | null>(null);
+  const [recentMentions, setRecentMentions] = useState<Tweet[] | null>(null);
   const [youtubeVideos, setYoutubeVideos] = useState<Video[] | null>(null);
   const [redditPosts, setRedditPosts] = useState<RedditPost[] | null>(null);
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
   const [fundingData, setFundingData] = useState<FundingData | null>(null);
   const [financialReport, setFinancialReport] = useState<FinancialReport | null>(null);
-  const [tiktokData, setTiktokData] = useState<ProfileDirectoryData | null>(null);
   const [wikipediaData, setWikipediaData] = useState<WikipediaData | null>(null);
   const [crunchbaseData, setCrunchbaseData] = useState<ProfileDirectoryData | null>(null);
   const [pitchbookData, setPitchbookData] = useState<ProfileDirectoryData | null>(null);
@@ -174,16 +183,22 @@ export function useCompanyResearch() {
     return data.results || [];
   }
 
+  async function fetchTwitterMentions(url: string): Promise<Tweet[]> {
+    const data = await postJson<{ results: Tweet[] }>("/api/scrapetwittermentions", { websiteurl: url });
+    return data.results || [];
+  }
+
   async function fetchTwitterProfile(url: string): Promise<{ text: string; username: string } | null> {
     const data = await postJson<{ results: any[] }>("/api/scrapetwitterprofile", { websiteurl: url });
     if (data.results && data.results.length > 0) {
       const result = data.results[0];
-      if (result.author) {
-        fetchRecentTweets(result.author)
+      const cleanHandle = extractXHandle(result.url) || result.author;
+      if (cleanHandle) {
+        fetchRecentTweets(cleanHandle)
           .then((tweets) => setRecentTweets(tweets))
           .catch((err) => console.error("Error fetching recent tweets:", err));
       }
-      return { text: result.text, username: result.author };
+      return { text: result.text, username: cleanHandle || result.author || "" };
     }
     return null;
   }
@@ -211,11 +226,6 @@ export function useCompanyResearch() {
   async function fetchFinancialReport(url: string): Promise<FinancialReport | null> {
     const data = await postJson<{ results: FinancialReport }>("/api/fetchfinancialreport", { websiteurl: url });
     return data.results || null;
-  }
-
-  async function fetchTikTokProfile(url: string): Promise<ProfileDirectoryData | null> {
-    const data = await postJson<{ results: ProfileDirectoryData[] }>("/api/fetchtiktok", { websiteurl: url });
-    return data.results && data.results.length > 0 ? data.results[0] : null;
   }
 
   async function fetchWikipedia(url: string): Promise<WikipediaData | null> {
@@ -281,12 +291,12 @@ export function useCompanyResearch() {
     setCompanySummary(null);
     setTwitterProfileText(null);
     setRecentTweets(null);
+    setRecentMentions(null);
     setYoutubeVideos(null);
     setRedditPosts(null);
     setGithubUrl(null);
     setFundingData(null);
     setFinancialReport(null);
-    setTiktokData(null);
     setWikipediaData(null);
     setCrunchbaseData(null);
     setPitchbookData(null);
@@ -315,12 +325,12 @@ export function useCompanyResearch() {
         fetchLinkedInData(domainName).then(setLinkedinData).catch((err) => addError("linkedin", err)),
         fetchNews(domainName).then(setNews).catch((err) => addError("news", err)),
         fetchTwitterProfile(domainName).then(setTwitterProfileText).catch((err) => addError("twitter", err)),
+        fetchTwitterMentions(domainName).then(setRecentMentions).catch((err) => addError("mentions", err)),
         fetchYoutubeVideos(domainName).then(setYoutubeVideos).catch((err) => addError("youtube", err)),
         fetchRedditPosts(domainName).then(setRedditPosts).catch((err) => addError("reddit", err)),
         fetchGitHubUrl(domainName).then(setGithubUrl).catch((err) => addError("github", err)),
         fetchFunding(domainName).then(setFundingData).catch((err) => addError("funding", err)),
         fetchFinancialReport(domainName).then(setFinancialReport).catch((err) => addError("financial", err)),
-        fetchTikTokProfile(domainName).then(setTiktokData).catch((err) => addError("tiktok", err)),
         fetchWikipedia(domainName).then(setWikipediaData).catch((err) => addError("wikipedia", err)),
         fetchCrunchbase(domainName).then(setCrunchbaseData).catch((err) => addError("crunchbase", err)),
         fetchPitchbook(domainName).then(setPitchbookData).catch((err) => addError("pitchbook", err)),
@@ -348,12 +358,12 @@ export function useCompanyResearch() {
     companySummary,
     twitterProfileText,
     recentTweets,
+    recentMentions,
     youtubeVideos,
     redditPosts,
     githubUrl,
     fundingData,
     financialReport,
-    tiktokData,
     wikipediaData,
     crunchbaseData,
     pitchbookData,

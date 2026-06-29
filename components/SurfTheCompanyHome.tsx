@@ -19,12 +19,13 @@ export default function SurfTheCompany() {
     news,
     companySummary,
     twitterProfileText,
+    recentTweets,
+    recentMentions,
     youtubeVideos,
     redditPosts,
     githubUrl,
     fundingData,
     financialReport,
-    tiktokData,
     wikipediaData,
     crunchbaseData,
     pitchbookData,
@@ -87,8 +88,9 @@ export default function SurfTheCompany() {
           <CompanySocialsSection
             isGenerating={isGenerating}
             twitterProfileText={twitterProfileText}
+            recentTweets={recentTweets}
+            recentMentions={recentMentions}
             youtubeVideos={youtubeVideos}
-            tiktokData={tiktokData}
             redditPosts={redditPosts}
             githubUrl={githubUrl}
           />
